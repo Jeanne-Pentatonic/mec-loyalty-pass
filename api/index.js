@@ -16,6 +16,10 @@ const LOGO_BUF = (() => {
   try { return fs.readFileSync(path.join(__dirname, '..', 'pass-template.pass', 'logo@3x.png')); }
   catch (e) { return null; }
 })();
+const HERO_BUF = (() => {
+  try { return fs.readFileSync(path.join(__dirname, '..', 'assets', 'hero.png')); }
+  catch (e) { return null; }
+})();
 
 const app = express();
 
@@ -47,6 +51,22 @@ app.get('/logo.png', (req, res) => {
   if (!LOGO_BUF) return res.status(404).end();
   res.set('Cache-Control', 'public, max-age=86400');
   res.type('png').send(LOGO_BUF);
+});
+
+// Hero/banner art for the Google Wallet loyalty class.
+app.get('/hero.png', (req, res) => {
+  if (!HERO_BUF) return res.status(404).end();
+  res.set('Cache-Control', 'public, max-age=86400');
+  res.type('png').send(HERO_BUF);
+});
+
+// One-shot: push the current design (logo/hero/colours) to the existing Google
+// Wallet class. Call after deploying a design change; harmless to repeat.
+app.post('/api/wallet/class/refresh', async (req, res) => {
+  try {
+    const result = await googleWallet.updateClass();
+    res.json(result);
+  } catch (e) { res.status(500).json({ error: e.message }); }
 });
 
 // Auth middleware for Apple Wallet

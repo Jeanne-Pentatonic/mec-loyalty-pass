@@ -15,6 +15,8 @@ const ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
 const CLASS_SUFFIX = process.env.GOOGLE_WALLET_CLASS || 'mec_loyalty_v1';
 const LOGO_URL = process.env.GOOGLE_WALLET_LOGO_URL
   || 'https://mec-loyalty-pass.vercel.app/logo.png';
+const HERO_URL = process.env.GOOGLE_WALLET_HERO_URL
+  || 'https://mec-loyalty-pass.vercel.app/hero.png';
 
 function getServiceAccount() {
   const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64;
@@ -61,6 +63,7 @@ function buildSaveUrl(member, { currency = 'USD', rewardValue = 0, baseUrl = '' 
     reviewStatus: 'UNDER_REVIEW',
     hexBackgroundColor: '#171717',
     programLogo: { sourceUri: { uri: LOGO_URL } },
+    heroImage: { sourceUri: { uri: HERO_URL } },
   };
 
   const loyaltyObject = {
@@ -150,4 +153,25 @@ async function updateObject(memberId, { points = 0, currency = 'USD', rewardValu
   return { status: res.status };
 }
 
-module.exports = { isConfigured, buildSaveUrl, updateObject };
+/**
+ * Push the current class design (logo, hero, background) to an already-created
+ * loyalty class. JWT payloads only create classes — design changes to an existing
+ * class must go through the API, which is what this does.
+ */
+async function updateClass() {
+  if (!isConfigured()) return { skipped: 'not configured' };
+  const classId = `${ISSUER_ID}.${CLASS_SUFFIX}`;
+  const at = await getAccessToken();
+  const patch = {
+    hexBackgroundColor: '#171717',
+    programLogo: { sourceUri: { uri: LOGO_URL } },
+    heroImage: { sourceUri: { uri: HERO_URL } },
+  };
+  const res = await httpsRequest(
+    { hostname: 'walletobjects.googleapis.com', path: `/walletobjects/v1/loyaltyClass/${classId}`, method: 'PATCH', headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' } },
+    JSON.stringify(patch)
+  );
+  return { status: res.status, body: res.body.slice(0, 300) };
+}
+
+module.exports = { isConfigured, buildSaveUrl, updateObject, updateClass };
