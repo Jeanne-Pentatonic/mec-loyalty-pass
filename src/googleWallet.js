@@ -163,6 +163,7 @@ async function updateClass() {
   const classId = `${ISSUER_ID}.${CLASS_SUFFIX}`;
   const at = await getAccessToken();
   const patch = {
+    reviewStatus: 'UNDER_REVIEW', // Google requires this on every class mutation
     hexBackgroundColor: '#171717',
     programLogo: { sourceUri: { uri: LOGO_URL } },
     heroImage: { sourceUri: { uri: HERO_URL } },
