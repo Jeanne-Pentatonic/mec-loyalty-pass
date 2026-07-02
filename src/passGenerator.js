@@ -224,4 +224,4 @@ async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   };
 }
 
-module.exports = { generatePass };
+module.exports = { generatePass, currencyForKiosk, REWARD_POINTS_PER_UNIT };

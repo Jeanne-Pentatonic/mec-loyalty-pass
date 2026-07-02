@@ -1,9 +1,11 @@
 const express = require('express');
 const cors = require('cors');
 const QRCode = require('qrcode');
-const { generatePass } = require('../src/passGenerator');
+const { generatePass, currencyForKiosk, REWARD_POINTS_PER_UNIT } = require('../src/passGenerator');
 const db = require('../src/db');
 const pushService = require('../src/pushService');
+const googleWallet = require('../src/googleWallet');
+const { v4: uuidv4 } = require('uuid');
 
 const app = express();
 
@@ -124,13 +126,47 @@ app.get('/start', async (req, res) => {
         },
       });
     }
-    // New visitor — send them to download their pass (which sets the cookie). Preserve kiosk.
+    // New visitor — onboard. Android -> Google Wallet (if configured), else Apple pass.
     console.log(`Tap: new visitor @ ${kiosk || 'unknown'} -> onboarding`);
     const q = kiosk ? `?kiosk=${encodeURIComponent(kiosk)}` : '';
-    return res.redirect(302, `${baseUrl}/pass${q}`);
+    const isAndroid = /android/i.test(req.headers['user-agent'] || '');
+    const target = (isAndroid && googleWallet.isConfigured()) ? '/gpass' : '/pass';
+    return res.redirect(302, `${baseUrl}${target}${q}`);
   } catch (error) {
     console.error('start error:', error);
     return res.status(500).json({ error: 'start failed', message: error.message });
+  }
+});
+
+// Android: Google Wallet loyalty pass. Creates/fetches the member (same account model
+// as Apple), sets the login cookie, then redirects to the "Add to Google Wallet" link.
+app.get('/gpass', async (req, res) => {
+  try {
+    if (!googleWallet.isConfigured()) {
+      return res.status(503).json({
+        error: 'Google Wallet not configured yet',
+        message: 'Set GOOGLE_WALLET_ISSUER_ID and GOOGLE_SERVICE_ACCOUNT_BASE64 to enable Android passes.',
+      });
+    }
+    const baseUrl = getBaseUrl(req);
+    const kiosk = req.query.kiosk ? String(req.query.kiosk) : null;
+    let member = req.query.member ? await db.getMember(req.query.member) : null;
+    if (!member) member = await db.createMember(uuidv4());
+    // Resolve + persist currency (same rule as the Apple pass)
+    const kioskCurrency = req.query.currency || currencyForKiosk(kiosk);
+    const currency = kioskCurrency || member.reward_currency || 'USD';
+    if (kioskCurrency && kioskCurrency !== member.reward_currency) {
+      await db.setMemberCurrency(member.id, currency);
+    }
+    const rewardValue = Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100;
+    const url = googleWallet.buildSaveUrl(member, { currency, rewardValue, baseUrl });
+    res.append('Set-Cookie', `mec_session=${member.profile_token}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`);
+    if (kiosk) { try { await db.logTap(member.id, kiosk); } catch (e) {} }
+    console.log(`Google pass: ${member.id.slice(0, 8)}... (${member.points} pts, ${currency})`);
+    return res.redirect(302, url);
+  } catch (error) {
+    console.error('gpass error:', error);
+    return res.status(500).json({ error: 'Failed', message: error.message });
   }
 });
 
