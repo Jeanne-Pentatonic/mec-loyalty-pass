@@ -28,7 +28,7 @@ function renderLandingPage({ qrDataUrl }) {
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Mastercard Experience Centre — Rewards</title>
+<title>Mastercard Experience Center — Rewards</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
@@ -47,9 +47,9 @@ body{font-family:'Poppins',-apple-system,'Helvetica Neue',sans-serif;background:
 h1{font-weight:300;font-size:28px;letter-spacing:0.01em;line-height:1.25}
 h1 strong{font-weight:600}
 .sub{color:var(--muted);font-weight:300;font-size:15px;margin-top:8px;margin-bottom:36px}
-.qr-tile{background:#FFFFFF;border-radius:24px;padding:22px;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 24px 80px rgba(235,0,27,0.10)}
-.qr-tile img{display:block;width:240px;height:240px}
-.hint{color:var(--muted);font-size:13px;font-weight:300;margin-top:18px;margin-bottom:34px}
+.qr-tile{background:#FFFFFF;border-radius:20px;padding:16px;display:inline-block;box-shadow:0 0 0 1px rgba(255,255,255,0.06),0 24px 80px rgba(235,0,27,0.10)}
+.qr-tile img{display:block;width:176px;height:176px}
+.hint{color:var(--muted);font-size:13px;font-weight:300;margin-top:16px}
 .btns{display:flex;flex-direction:column;gap:12px;align-items:center}
 .wallet-btn{display:flex;align-items:center;justify-content:center;gap:10px;width:100%;max-width:300px;background:#000;color:#fff;border:1.5px solid rgba(255,255,255,0.35);border-radius:14px;padding:14px 22px;text-decoration:none;font-size:15px;font-weight:500;letter-spacing:0.01em;transition:border-color .15s ease,transform .15s ease}
 .wallet-btn:hover{border-color:#fff;transform:translateY(-1px)}
@@ -69,18 +69,18 @@ footer{margin-top:44px}
 <div class="bg-circles" aria-hidden="true"><div class="c1"></div><div class="c2"></div><div class="c3"></div></div>
 <main class="wrap">
   <div class="mark">${MC_MARK(76)}</div>
-  <h1>Experience Centre<br><strong>Rewards</strong></h1>
+  <h1>Experience Center<br><strong>Rewards</strong></h1>
   <p class="sub">One card. Anywhere in the world. Every visit rewarded.</p>
-  <div class="qr-tile"><img src="${qrDataUrl}" alt="QR code — scan to add your card"></div>
-  <p class="hint">Scan with your phone camera to add the card to your wallet</p>
-  <div class="divider">or add directly</div>
   <div class="btns">
     <a class="wallet-btn" href="/pass">${APPLE_GLYPH} Add to Apple Wallet</a>
     <a class="wallet-btn" href="/gpass">${GOOGLE_GLYPH} Add to Google Wallet</a>
   </div>
+  <div class="divider">on a computer?</div>
+  <div class="qr-tile"><img src="${qrDataUrl}" alt="QR code — scan to get the card on your phone"></div>
+  <p class="hint">Scan to get the card on your phone instead</p>
   <footer>
     <div class="cobrand">${MC_MARK(34)}<span class="rule"></span><span class="partner">PENTATONIC</span></div>
-    <div class="fineprint">Mastercard Experience Centre</div>
+    <div class="fineprint">Mastercard Experience Center</div>
   </footer>
 </main>
 </body>

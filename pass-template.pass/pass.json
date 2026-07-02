@@ -3,7 +3,7 @@
   "passTypeIdentifier": "pass.com.pentatonic.loyalty",
   "teamIdentifier": "SJPM5MT6LL",
   "organizationName": "Pentatonic",
-  "description": "Mastercard Experience Centre Rewards",
+  "description": "Mastercard Experience Center Rewards",
   "serialNumber": "PLACEHOLDER_SERIAL_NUMBER",
   "storeCard": {
     "headerFields": [
@@ -23,19 +23,17 @@
     ],
     "primaryFields": [
       {
-        "key": "member",
+        "key": "holder",
         "label": "MEMBER",
-        "value": "PLACEHOLDER"
-      }
-    ],
-    "auxiliaryFields": [
-      {
-        "key": "name",
-        "label": "NAME",
         "value": ""
       }
     ],
     "secondaryFields": [
+      {
+        "key": "member",
+        "label": "MEMBER Nº",
+        "value": "PLACEHOLDER"
+      },
       {
         "key": "tier",
         "label": "TIER",
@@ -44,7 +42,8 @@
       {
         "key": "memberSince",
         "label": "SINCE",
-        "value": "PLACEHOLDER"
+        "value": "PLACEHOLDER",
+        "textAlignment": "PKTextAlignmentRight"
       }
     ],
     "backFields": [

@@ -359,7 +359,7 @@ app.get('/profile/:memberId', async (req, res) => {
   res.send(`<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Your Card — Mastercard Experience Centre</title>
+<title>Your Card — Mastercard Experience Center</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
@@ -412,7 +412,7 @@ input:focus{outline:none;border-color:#fff}
 <div class="card">
 <div class="brand">
 <svg width="46" height="30" viewBox="0 0 163.3 108" xmlns="http://www.w3.org/2000/svg" aria-label="Mastercard"><defs><clipPath id="mcP"><circle cx="54" cy="54" r="54"/></clipPath></defs><circle cx="54" cy="54" r="54" fill="#EB001B"/><circle cx="109.3" cy="54" r="54" fill="#F79E1B"/><circle cx="109.3" cy="54" r="54" fill="#FF5F00" clip-path="url(#mcP)"/></svg>
-<div class="t">Experience Centre Rewards<small>Membership profile</small></div>
+<div class="t">Experience Center Rewards<small>Membership profile</small></div>
 </div>
 <div class="member-id">Member: ${member.id.slice(0, 8).toUpperCase()}</div>
 <div class="stats">

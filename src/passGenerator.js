@@ -175,19 +175,18 @@ async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   pass.headerFields[1].value = rewardValue;
   pass.headerFields[1].currencyCode = rewardCurrency;
   pass.headerFields[1].changeMessage = 'Your reward is now %@';
-  pass.primaryFields[0].value = member.id.toUpperCase().slice(0, 8);
-  // Set name in auxiliaryFields (visible below primary field)
+  // Primary field renders VERY large over the strip (balance-style) — only the
+  // member's name earns that spot; without one the strip stays clean artwork.
   if (member.name) {
-    pass.auxiliaryFields[0].label = 'NAME';
-    pass.auxiliaryFields[0].value = member.name;
-    pass.auxiliaryFields[0].changeMessage = 'Your name has been updated to %@';
+    pass.primaryFields[0].value = member.name;
+    pass.primaryFields[0].changeMessage = 'Your name has been updated to %@';
   } else {
-    pass.auxiliaryFields[0].label = '';
-    pass.auxiliaryFields[0].value = '';
+    pass.primaryFields.pop();
   }
-  pass.secondaryFields[0].value = member.tier;
-  pass.secondaryFields[0].changeMessage = 'Your tier is now %@!';
-  pass.secondaryFields[1].value = memberSince;
+  pass.secondaryFields[0].value = member.id.toUpperCase().slice(0, 8);
+  pass.secondaryFields[1].value = member.tier;
+  pass.secondaryFields[1].changeMessage = 'Your tier is now %@!';
+  pass.secondaryFields[2].value = memberSince;
 
   // Back fields: memberId, editProfile, passDetails, recentActivity, website, terms
   pass.backFields[0].value = member.id;

@@ -59,7 +59,7 @@ function buildSaveUrl(member, { currency = 'USD', rewardValue = 0, baseUrl = '' 
   const loyaltyClass = {
     id: classId,
     issuerName: 'Pentatonic',
-    programName: 'Mastercard Experience Centre',
+    programName: 'Mastercard Experience Center',
     reviewStatus: 'UNDER_REVIEW',
     hexBackgroundColor: '#171717',
     programLogo: { sourceUri: { uri: LOGO_URL } },
@@ -164,6 +164,7 @@ async function updateClass() {
   const at = await getAccessToken();
   const patch = {
     reviewStatus: 'UNDER_REVIEW', // Google requires this on every class mutation
+    programName: 'Mastercard Experience Center',
     hexBackgroundColor: '#171717',
     programLogo: { sourceUri: { uri: LOGO_URL } },
     heroImage: { sourceUri: { uri: HERO_URL } },
