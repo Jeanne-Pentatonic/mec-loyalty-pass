@@ -70,7 +70,7 @@ footer{margin-top:44px}
 <main class="wrap">
   <div class="mark">${MC_MARK(76)}</div>
   <h1>Experience Centre<br><strong>Rewards</strong></h1>
-  <p class="sub">One card. Every Experience Centre. Every visit rewarded.</p>
+  <p class="sub">One card. Anywhere in the world. Every visit rewarded.</p>
   <div class="qr-tile"><img src="${qrDataUrl}" alt="QR code — scan to add your card"></div>
   <p class="hint">Scan with your phone camera to add the card to your wallet</p>
   <div class="divider">or add directly</div>
