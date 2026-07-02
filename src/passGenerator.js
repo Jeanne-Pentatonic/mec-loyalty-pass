@@ -81,15 +81,23 @@ function getCertificates() {
  */
 // Money-reward config (PLACEHOLDERS — replace map + rate with the real kiosk list & reward rule)
 const REWARD_POINTS_PER_UNIT = 100; // 100 points = 1 unit of the local currency
+// The 10 MEC kiosk cities -> local currency. Accepts "New York", "new-york", "newyork" etc.
+const KIOSK_CURRENCY = {
+  singapore: 'SGD',
+  sydney: 'AUD',
+  dubai: 'AED',
+  brussels: 'EUR',
+  stockholm: 'SEK',
+  dublin: 'EUR',
+  london: 'GBP',
+  vancouver: 'CAD',
+  newyork: 'USD',
+  mexicocity: 'MXN',
+};
 function currencyForKiosk(kiosk) {
   if (!kiosk) return 'USD';
-  const k = String(kiosk).toLowerCase();
-  const map = {
-    london: 'GBP', newyork: 'USD', 'new-york': 'USD', paris: 'EUR',
-    tokyo: 'JPY', dubai: 'AED', singapore: 'SGD',
-    '1': 'USD', '2': 'GBP', '3': 'EUR', '4': 'JPY', '5': 'AED', '6': 'SGD',
-  };
-  return map[k] || 'USD';
+  const key = String(kiosk).toLowerCase().replace(/[\s_-]+/g, ''); // normalise spacing/case
+  return KIOSK_CURRENCY[key] || 'USD';
 }
 
 async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
