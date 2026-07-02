@@ -79,8 +79,6 @@ function getCertificates() {
  * @param {string} existingMemberId - Optional existing member ID to regenerate pass
  * @returns {Promise<{buffer: Buffer, memberId: string, member: object}>}
  */
-// Money-reward config (PLACEHOLDERS — replace map + rate with the real kiosk list & reward rule)
-const REWARD_POINTS_PER_UNIT = 100; // 100 points = 1 unit of the local currency
 // The 10 MEC kiosk cities -> local currency. Accepts "New York", "new-york", "newyork" etc.
 const KIOSK_CURRENCY = {
   singapore: 'SGD',
@@ -166,14 +164,14 @@ async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   // Diamond tier shows infinity symbol instead of points
   pass.headerFields[0].value = member.tier === 'DIAMOND' ? '∞' : member.points;
   pass.headerFields[0].changeMessage = member.tier === 'DIAMOND' ? 'Welcome, Diamond member!' : 'You now have %@ points!';
-  // Money reward — currency inferred from the kiosk location, persisted per member so it
-  // stays correct on later auto-updates (which carry no kiosk context).
+  // Money reward — its own balance (kiosks grant points OR currency). Currency inferred
+  // from the kiosk location and persisted, so it stays correct on later auto-updates.
   const kioskCurrency = opts.currency || currencyForKiosk(opts.kiosk);
   const rewardCurrency = kioskCurrency || member.reward_currency || 'USD';
   if (kioskCurrency && kioskCurrency !== member.reward_currency) {
     await db.setMemberCurrency(member.id, kioskCurrency);
   }
-  const rewardValue = Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100;
+  const rewardValue = member.reward_balance || 0;
   pass.headerFields[1].value = rewardValue;
   pass.headerFields[1].currencyCode = rewardCurrency;
   pass.headerFields[1].changeMessage = 'Your reward is now %@';
@@ -224,4 +222,4 @@ async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   };
 }
 
-module.exports = { generatePass, currencyForKiosk, REWARD_POINTS_PER_UNIT };
+module.exports = { generatePass, currencyForKiosk };

@@ -1,7 +1,7 @@
 const express = require('express');
 const cors = require('cors');
 const QRCode = require('qrcode');
-const { generatePass, currencyForKiosk, REWARD_POINTS_PER_UNIT } = require('../src/passGenerator');
+const { generatePass, currencyForKiosk } = require('../src/passGenerator');
 const db = require('../src/db');
 const pushService = require('../src/pushService');
 const googleWallet = require('../src/googleWallet');
@@ -174,7 +174,7 @@ app.get('/gpass', async (req, res) => {
     if (kioskCurrency && kioskCurrency !== member.reward_currency) {
       await db.setMemberCurrency(member.id, currency);
     }
-    const rewardValue = Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100;
+    const rewardValue = member.reward_balance || 0;
     const url = googleWallet.buildSaveUrl(member, { currency, rewardValue, baseUrl });
     res.append('Set-Cookie', `mec_session=${member.profile_token}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`);
     if (kiosk) { try { await db.logTap(member.id, kiosk); } catch (e) {} }
@@ -253,11 +253,32 @@ app.post('/api/members/:memberId/points', async (req, res) => {
     await googleWallet.updateObject(member.id, {
       points: member.points,
       currency: member.reward_currency || 'USD',
-      rewardValue: Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100,
+      rewardValue: member.reward_balance || 0,
       tier: member.tier,
     });
   } catch (e) { console.error('Google update failed:', e.message); }
   res.json({ success: true, member: { id: member.id, points: member.points, tier: member.tier } });
+});
+
+// Grant a money reward (separate from points — a kiosk gives either one).
+// Body: { amount: number, currency?: string }  (currency defaults to the member's kiosk currency)
+app.post('/api/members/:memberId/reward', async (req, res) => {
+  const { memberId } = req.params;
+  const { amount, currency } = req.body;
+  if (typeof amount !== 'number') return res.status(400).json({ error: 'Amount must be number' });
+  const member = await db.addReward(memberId, amount, currency || null);
+  if (!member) return res.status(404).json({ error: 'Not found' });
+  console.log(`Reward: ${memberId.slice(0, 8)}... ${amount > 0 ? '+' : ''}${amount} ${member.reward_currency}`);
+  try { await pushService.notifyPassUpdate(memberId); } catch (e) { console.error('Push failed:', e.message); }
+  try {
+    await googleWallet.updateObject(member.id, {
+      points: member.points,
+      currency: member.reward_currency || 'USD',
+      rewardValue: member.reward_balance || 0,
+      tier: member.tier,
+    });
+  } catch (e) { console.error('Google update failed:', e.message); }
+  res.json({ success: true, member: { id: member.id, reward_balance: member.reward_balance, currency: member.reward_currency, tier: member.tier } });
 });
 
 // Profile update endpoint

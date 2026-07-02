@@ -123,6 +123,7 @@ const initSQL = `
     name TEXT DEFAULT NULL,
     profile_token TEXT DEFAULT NULL,
     reward_currency TEXT DEFAULT NULL,
+    reward_balance REAL DEFAULT 0,
     points INTEGER DEFAULT 0,
     tier TEXT DEFAULT 'GREEN',
     member_since TEXT NOT NULL,
@@ -188,6 +189,12 @@ const initSQL = `
     } catch (e) {
       // Column already exists, ignore
     }
+    // Migration: add reward_balance column if it doesn't exist
+    try {
+      await db.execute('ALTER TABLE members ADD COLUMN reward_balance REAL DEFAULT 0');
+    } catch (e) {
+      // Column already exists, ignore
+    }
     // Backfill profile_token for existing members
     const members = await db.execute({ sql: 'SELECT id FROM members WHERE profile_token IS NULL', args: [] });
     for (const member of members.rows) {
@@ -214,6 +221,12 @@ const initSQL = `
     } catch (e) {
       // Column already exists, ignore
     }
+    // Migration: add reward_balance column if it doesn't exist
+    try {
+      db.exec('ALTER TABLE members ADD COLUMN reward_balance REAL DEFAULT 0');
+    } catch (e) {
+      // Column already exists, ignore
+    }
     // Backfill profile_token for existing members
     const members = db.prepare('SELECT id FROM members WHERE profile_token IS NULL').all();
     for (const member of members) {
@@ -223,14 +236,16 @@ const initSQL = `
   }
 })();
 
-function calculateTier(points, currentTier = null) {
-  // Incremental tiers — the gap widens at each step (150, +250, +350).
-  //   SILVER 150 | GOLD 400 | PLATINUM 750.  DIAMOND stays invite-only (manual).
+function calculateTier(points, currentTier = null, rewardBalance = 0) {
+  // Tier is reached by EITHER ladder (points or money reward) — whichever is higher.
+  // Both incremental (gap widens each step). DIAMOND stays invite-only (manual).
+  //   points:  SILVER 150 | GOLD 400 | PLATINUM 750
+  //   money:   SILVER 10  | GOLD 30  | PLATINUM 60   (in the member's currency units)
   if (currentTier === 'DIAMOND') return 'DIAMOND';
-  if (points >= 750) return 'PLATINUM';
-  if (points >= 400) return 'GOLD';
-  if (points >= 150) return 'SILVER';
-  return 'GREEN';
+  const rank = { GREEN: 0, SILVER: 1, GOLD: 2, PLATINUM: 3 };
+  const byPoints = points >= 750 ? 'PLATINUM' : points >= 400 ? 'GOLD' : points >= 150 ? 'SILVER' : 'GREEN';
+  const byMoney = rewardBalance >= 60 ? 'PLATINUM' : rewardBalance >= 30 ? 'GOLD' : rewardBalance >= 10 ? 'SILVER' : 'GREEN';
+  return rank[byMoney] > rank[byPoints] ? byMoney : byPoints;
 }
 
 // Member functions
@@ -307,6 +322,25 @@ async function setMemberCurrency(id, currency) {
   }
 }
 
+// Add to the member's money reward balance (kiosks grant either points OR currency).
+// Currency defaults to whatever the member already has (set from their kiosk).
+async function addReward(id, amount, currency = null) {
+  const member = await getMember(id);
+  if (!member) return null;
+  const newBalance = Math.max(0, (member.reward_balance || 0) + amount);
+  const cur = currency || member.reward_currency || 'USD';
+  const newTier = calculateTier(member.points, member.tier, newBalance);
+  if (isAsync) {
+    await db.execute({
+      sql: 'UPDATE members SET reward_balance = ?, reward_currency = ?, tier = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?',
+      args: [newBalance, cur, newTier, id],
+    });
+  } else {
+    db.prepare('UPDATE members SET reward_balance = ?, reward_currency = ?, tier = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(newBalance, cur, newTier, id);
+  }
+  return getMember(id);
+}
+
 // Record a kiosk tap (member may be null for a brand-new visitor)
 async function logTap(memberId, kiosk) {
   if (isAsync) {
@@ -321,7 +355,7 @@ async function updateMemberPoints(id, pointsChange, reason = null) {
   if (!member) return null;
 
   const newPoints = Math.max(0, member.points + pointsChange);
-  const newTier = calculateTier(newPoints, member.tier);
+  const newTier = calculateTier(newPoints, member.tier, member.reward_balance || 0);
 
   if (isAsync) {
     await db.execute({
@@ -485,6 +519,7 @@ module.exports = {
   validateProfileToken,
   getMemberByProfileToken,
   setMemberCurrency,
+  addReward,
   logTap,
   updateMemberPoints,
   updateMemberProfile,
