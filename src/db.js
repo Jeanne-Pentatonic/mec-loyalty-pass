@@ -224,10 +224,11 @@ const initSQL = `
 })();
 
 function calculateTier(points, currentTier = null) {
-  // Tier steps up every 150 points. DIAMOND is exclusive - preserve it if already set.
+  // Incremental tiers — the gap widens at each step (150, +250, +350).
+  //   SILVER 150 | GOLD 400 | PLATINUM 750.  DIAMOND stays invite-only (manual).
   if (currentTier === 'DIAMOND') return 'DIAMOND';
-  if (points >= 450) return 'PLATINUM';
-  if (points >= 300) return 'GOLD';
+  if (points >= 750) return 'PLATINUM';
+  if (points >= 400) return 'GOLD';
   if (points >= 150) return 'SILVER';
   return 'GREEN';
 }
