@@ -224,11 +224,11 @@ const initSQL = `
 })();
 
 function calculateTier(points, currentTier = null) {
-  // DIAMOND is exclusive - preserve it if already set
+  // Tier steps up every 150 points. DIAMOND is exclusive - preserve it if already set.
   if (currentTier === 'DIAMOND') return 'DIAMOND';
-  if (points >= 10000) return 'PLATINUM';
-  if (points >= 5000) return 'GOLD';
-  if (points >= 1000) return 'SILVER';
+  if (points >= 450) return 'PLATINUM';
+  if (points >= 300) return 'GOLD';
+  if (points >= 150) return 'SILVER';
   return 'GREEN';
 }
 

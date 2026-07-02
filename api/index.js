@@ -246,7 +246,17 @@ app.post('/api/members/:memberId/points', async (req, res) => {
   const member = await db.updateMemberPoints(memberId, points, reason);
   if (!member) return res.status(404).json({ error: 'Not found' });
   console.log(`Points: ${memberId} ${points > 0 ? '+' : ''}${points}`);
+  // Apple: APNs push tells the phone to re-fetch. Google: server-side object PATCH (Google
+  // then syncs to the phone itself). Both best-effort; a member only has one of the two.
   try { await pushService.notifyPassUpdate(memberId); } catch (e) { console.error('Push failed:', e.message); }
+  try {
+    await googleWallet.updateObject(member.id, {
+      points: member.points,
+      currency: member.reward_currency || 'USD',
+      rewardValue: Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100,
+      tier: member.tier,
+    });
+  } catch (e) { console.error('Google update failed:', e.message); }
   res.json({ success: true, member: { id: member.id, points: member.points, tier: member.tier } });
 });
 

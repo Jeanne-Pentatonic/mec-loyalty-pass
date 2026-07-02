@@ -9,6 +9,7 @@
 //   GOOGLE_WALLET_CLASS              - class suffix (default mec_loyalty_v1)
 //   GOOGLE_WALLET_LOGO_URL           - hosted PNG/JPEG logo url for the pass
 const crypto = require('crypto');
+const https = require('https');
 
 const ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
 const CLASS_SUFFIX = process.env.GOOGLE_WALLET_CLASS || 'mec_loyalty_v1';
@@ -90,4 +91,63 @@ function buildSaveUrl(member, { currency = 'USD', rewardValue = 0, baseUrl = '' 
   return `https://pay.google.com/gp/v/save/${token}`;
 }
 
-module.exports = { isConfigured, buildSaveUrl };
+function httpsRequest(opts, body) {
+  return new Promise((resolve, reject) => {
+    const r = https.request(opts, (res) => {
+      let d = '';
+      res.on('data', (c) => (d += c));
+      res.on('end', () => resolve({ status: res.statusCode, body: d }));
+    });
+    r.on('error', reject);
+    if (body) r.write(body);
+    r.end();
+  });
+}
+
+// OAuth2 access token for the Wallet API (service-account JWT-bearer grant).
+async function getAccessToken() {
+  const sa = getServiceAccount();
+  if (!sa) throw new Error('Google Wallet not configured');
+  const now = Math.floor(Date.now() / 1000);
+  const assertion = signJwt({
+    iss: sa.client_email,
+    scope: 'https://www.googleapis.com/auth/wallet_object.issuer',
+    aud: 'https://oauth2.googleapis.com/token',
+    iat: now,
+    exp: now + 3600,
+  }, sa.private_key);
+  const res = await httpsRequest(
+    { hostname: 'oauth2.googleapis.com', path: '/token', method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' } },
+    `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${assertion}`
+  );
+  const at = JSON.parse(res.body).access_token;
+  if (!at) throw new Error('token exchange failed: ' + res.body.slice(0, 200));
+  return at;
+}
+
+/**
+ * Push updated points/reward/tier to a member's Google Wallet object.
+ * Google syncs the change to the phone automatically — no per-device push needed.
+ * No-op (returns {skipped}) if Google Wallet isn't configured. Returns {status:404}
+ * if the member never added a Google pass (object doesn't exist) — caller can ignore.
+ */
+async function updateObject(memberId, { points = 0, currency = 'USD', rewardValue = 0, tier = 'GREEN' } = {}) {
+  if (!isConfigured()) return { skipped: 'not configured' };
+  const objectId = `${ISSUER_ID}.${String(memberId).replace(/[^\w.-]/g, '_')}`;
+  const at = await getAccessToken();
+  const patch = {
+    loyaltyPoints: { label: 'Points', balance: { int: String(points) } },
+    secondaryLoyaltyPoints: {
+      label: 'Reward',
+      balance: { money: { currencyCode: currency, micros: Math.round((rewardValue || 0) * 1e6) } },
+    },
+    textModulesData: [{ id: 'tier', header: 'Tier', body: tier }],
+  };
+  const res = await httpsRequest(
+    { hostname: 'walletobjects.googleapis.com', path: `/walletobjects/v1/loyaltyObject/${objectId}`, method: 'PATCH', headers: { Authorization: `Bearer ${at}`, 'Content-Type': 'application/json' } },
+    JSON.stringify(patch)
+  );
+  return { status: res.status };
+}
+
+module.exports = { isConfigured, buildSaveUrl, updateObject };
