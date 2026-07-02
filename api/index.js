@@ -337,7 +337,7 @@ app.get('/profile/:memberId', async (req, res) => {
   const { token } = req.query;
   const member = await db.validateProfileToken(req.params.memberId, token);
   if (!member) {
-    return res.status(403).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@300&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Atkinson Hyperlegible Next",sans-serif;font-weight:300;background:#171717;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:#fff}.card{background:#FFFFFF;padding:40px;max-width:400px;width:100%;color:#171717;text-align:center}h1{font-size:23px;font-weight:300;margin-bottom:16px}p{color:#A9A9A9;font-size:14px;line-height:1.4}</style></head><body><div class="card"><h1>Access Denied</h1><p>Please access your profile from the link on the back of your Apple Wallet pass.</p></div></body></html>`);
+    return res.status(403).send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Access Denied</title><link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:'Poppins',-apple-system,sans-serif;font-weight:300;background:#141413;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px;color:#fff;text-align:center}h1{font-size:22px;font-weight:500;margin-bottom:12px}p{color:#9E9B96;font-size:14px;line-height:1.5;max-width:320px}</style></head><body><div><h1>Access denied</h1><p>Please open your profile from the link on the back of your wallet pass.</p></div></body></html>`);
   }
 
   const history = await db.getPointsHistory(member.id, 21); // Fetch 21 to check if there's more
@@ -359,53 +359,61 @@ app.get('/profile/:memberId', async (req, res) => {
   res.send(`<!DOCTYPE html>
 <html><head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Edit Profile - Pentatonic</title>
+<title>Your Card — Mastercard Experience Centre</title>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@200&family=Atkinson+Hyperlegible+Next:wght@300&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600&display=swap" rel="stylesheet">
 <style>
 *{margin:0;padding:0;box-sizing:border-box}
-body{font-family:"Atkinson Hyperlegible Next",sans-serif;font-weight:300;background:#171717;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
-.card{background:#FFFFFF;padding:40px;max-width:400px;width:100%}
-.logo{height:20px;width:auto;margin-bottom:8px}
-.tagline{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;color:#A9A9A9;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:32px}
-.member-id{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;color:#A9A9A9;font-size:12px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:24px}
-.stats{display:flex;gap:24px;margin-bottom:24px}
-.stat{flex:1}
-.stat-value{font-size:29px;font-weight:300;color:#171717;line-height:1.1}
-.stat-label{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:12px;color:#A9A9A9;text-transform:uppercase;letter-spacing:0.05em;margin-top:4px}
-.form-group{margin-bottom:24px}
-label{display:block;font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:12px;color:#A9A9A9;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:8px}
-input{width:100%;padding:16px;border:1px solid #A9A9A9;font-family:"Atkinson Hyperlegible Next",sans-serif;font-size:16px;font-weight:300;transition:border-color 150ms ease-out}
-input:focus{outline:none;border-color:#171717}
-.btn{width:100%;background:#00FBA9;color:#171717;padding:16px;border:none;border-radius:9999px;font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;cursor:pointer;transition:opacity 150ms ease-out}
-.btn:hover{opacity:0.85}
-.btn:disabled{background:#A9A9A9;cursor:not-allowed}
-.btn-edit{background:#FAFAFA;color:#171717;border:1px solid #171717;margin-top:16px}
-.btn-download{background:#171717;color:#FFFFFF;margin-top:32px;display:block;text-decoration:none;text-align:center}
-.message{padding:16px;margin-bottom:24px;font-size:14px}
-.success{background:#FAFAFA;color:#171717;border-left:4px solid #00FBA9}
-.error{background:#FAFAFA;color:#171717;border-left:4px solid #FF4C00}
-.info{color:#A9A9A9;font-size:14px;margin-top:24px;line-height:1.4}
+:root{--mc-red:#EB001B;--mc-orange:#F79E1B;--mc-interlock:#FF5F00;--muted:#9E9B96;--line:rgba(255,255,255,0.10)}
+body{font-family:'Poppins',-apple-system,'Helvetica Neue',sans-serif;font-weight:300;background:#141413;color:#fff;min-height:100vh;display:flex;align-items:flex-start;justify-content:center;padding:40px 24px}
+.card{max-width:420px;width:100%}
+.brand{display:flex;align-items:center;gap:12px;margin-bottom:28px}
+.brand svg{display:block}
+.brand .t{font-size:15px;font-weight:500;letter-spacing:0.01em}
+.brand .t small{display:block;font-size:11px;font-weight:300;color:var(--muted);letter-spacing:0.08em;text-transform:uppercase;margin-top:2px}
+.member-id{color:var(--muted);font-size:12px;font-weight:300;letter-spacing:0.10em;text-transform:uppercase;margin-bottom:22px}
+.stats{display:flex;gap:16px;margin-bottom:26px}
+.stat{flex:1;border:1px solid var(--line);border-radius:14px;padding:16px}
+.stat-value{font-size:26px;font-weight:500;line-height:1.1}
+.stat-label{font-size:10px;font-weight:600;color:var(--mc-interlock);text-transform:uppercase;letter-spacing:0.10em;margin-top:6px}
+.form-group{margin-bottom:20px}
+label{display:block;font-size:10px;font-weight:600;color:var(--mc-interlock);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:8px}
+input{width:100%;padding:14px 16px;border:1px solid rgba(255,255,255,0.25);border-radius:12px;background:transparent;color:#fff;font-family:'Poppins',sans-serif;font-size:16px;font-weight:300;transition:border-color 150ms ease-out}
+input:focus{outline:none;border-color:#fff}
+.btn{width:100%;background:#fff;color:#141413;padding:14px;border:none;border-radius:12px;font-family:'Poppins',sans-serif;font-weight:500;font-size:14px;letter-spacing:0.01em;cursor:pointer;transition:opacity 150ms ease-out}
+.btn:hover{opacity:0.88}
+.btn:disabled{background:rgba(255,255,255,0.3);cursor:not-allowed}
+.btn-edit{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.35);margin-top:14px}
+.btn-edit:hover{border-color:#fff;opacity:1}
+.btn-download{background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.35);margin-top:28px;display:block;text-decoration:none;text-align:center}
+.btn-download:hover{border-color:#fff;opacity:1}
+.message{border-radius:12px;font-size:14px;font-weight:300}
+.message.success,.message.error{padding:14px 16px;margin-bottom:20px;border:1px solid var(--line)}
+.success{border-left:3px solid var(--mc-orange)!important}
+.error{border-left:3px solid var(--mc-red)!important}
+.info{color:var(--muted);font-size:13px;margin-top:20px;line-height:1.5}
 .name-display{margin-bottom:24px}
-.name-value{font-size:23px;font-weight:300;color:#171717;line-height:1.1;margin-bottom:8px}
-.name-label{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:12px;color:#A9A9A9;text-transform:uppercase;letter-spacing:0.05em}
+.name-value{font-size:22px;font-weight:400;line-height:1.1;margin-bottom:6px}
+.name-label{font-size:10px;font-weight:600;color:var(--mc-interlock);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:6px}
 .hidden{display:none}
-.history{margin-top:32px;padding-top:24px;border-top:1px solid #FAFAFA}
-.history-title{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:12px;color:#A9A9A9;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:16px}
-.history-item{display:flex;align-items:center;gap:12px;padding:8px 0;border-bottom:1px solid #FAFAFA}
+.history{margin-top:32px;padding-top:24px;border-top:1px solid var(--line)}
+.history-title{font-size:10px;font-weight:600;color:var(--mc-interlock);text-transform:uppercase;letter-spacing:0.10em;margin-bottom:14px}
+.history-item{display:flex;align-items:center;gap:12px;padding:9px 0;border-bottom:1px solid var(--line)}
 .history-item:last-child{border-bottom:none}
-.history-points{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:14px;min-width:60px}
-.history-points.positive{color:#00FBA9}
-.history-points.negative{color:#FF4C00}
-.history-reason{flex:1;font-size:14px;color:#171717}
-.history-date{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:12px;color:#A9A9A9;text-transform:uppercase}
-.history-empty{color:#A9A9A9;font-size:14px}
-.btn-load-more{margin-top:16px;background:#FAFAFA;color:#171717;border:1px solid #A9A9A9}
+.history-points{font-size:14px;font-weight:500;min-width:60px}
+.history-points.positive{color:var(--mc-orange)}
+.history-points.negative{color:var(--mc-red)}
+.history-reason{flex:1;font-size:14px;font-weight:300}
+.history-date{font-size:12px;font-weight:300;color:var(--muted)}
+.history-empty{color:var(--muted);font-size:14px}
+.btn-load-more{margin-top:16px;background:transparent;color:#fff;border:1.5px solid rgba(255,255,255,0.35)}
 </style>
 </head><body>
 <div class="card">
-<img src="https://pub-ab109a8a73bd4a89a0df2c903e8e86e7.r2.dev/pentatonic-logo.svg" alt="Pentatonic" class="logo"/>
-<div class="tagline">Membership Profile</div>
+<div class="brand">
+<svg width="46" height="30" viewBox="0 0 163.3 108" xmlns="http://www.w3.org/2000/svg" aria-label="Mastercard"><defs><clipPath id="mcP"><circle cx="54" cy="54" r="54"/></clipPath></defs><circle cx="54" cy="54" r="54" fill="#EB001B"/><circle cx="109.3" cy="54" r="54" fill="#F79E1B"/><circle cx="109.3" cy="54" r="54" fill="#FF5F00" clip-path="url(#mcP)"/></svg>
+<div class="t">Experience Centre Rewards<small>Membership profile</small></div>
+</div>
 <div class="member-id">Member: ${member.id.slice(0, 8).toUpperCase()}</div>
 <div class="stats">
 <div class="stat"><div class="stat-value">${member.points.toLocaleString()}</div><div class="stat-label">Points</div></div>
