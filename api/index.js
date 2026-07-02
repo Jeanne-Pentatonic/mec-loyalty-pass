@@ -2,6 +2,7 @@ const express = require('express');
 const cors = require('cors');
 const QRCode = require('qrcode');
 const { generatePass, currencyForKiosk } = require('../src/passGenerator');
+const { renderLandingPage } = require('../src/pages');
 const db = require('../src/db');
 const pushService = require('../src/pushService');
 const googleWallet = require('../src/googleWallet');
@@ -67,9 +68,9 @@ app.get('/', async (req, res) => {
   const passUrl = `${baseUrl}/pass`;
   try {
     const qrDataUrl = await QRCode.toDataURL(passUrl, {
-      width: 300, margin: 2, color: { dark: '#1a1a1a', light: '#ffffff' }
+      width: 480, margin: 2, color: { dark: '#141413', light: '#ffffff' }
     });
-    res.send(`<!DOCTYPE html><html><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pentatonic Rewards</title><link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin><link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Mono:wght@200&family=Atkinson+Hyperlegible+Next:wght@300&display=swap" rel="stylesheet"><style>*{margin:0;padding:0;box-sizing:border-box}body{font-family:"Atkinson Hyperlegible Next",sans-serif;font-weight:300;background:#171717;min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}.card{background:#FFFFFF;padding:40px;text-align:left;max-width:400px;width:100%}.logo{height:24px;width:auto;margin-bottom:8px}.tagline{font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;color:#A9A9A9;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;margin-bottom:32px}.qr{background:#FAFAFA;padding:24px;margin-bottom:24px}.qr img{display:block;margin:0 auto;max-width:100%;height:auto}.info{color:#A9A9A9;font-size:14px;line-height:1.4;margin-bottom:24px}.btn{display:block;background:#00FBA9;color:#171717;padding:16px 32px;border-radius:9999px;text-decoration:none;font-family:"Atkinson Hyperlegible Mono",monospace;font-weight:200;font-size:14px;text-transform:uppercase;letter-spacing:0.05em;text-align:center;transition:opacity 150ms ease-out}.btn:hover{opacity:0.85}</style></head><body><div class="card"><img src="https://pub-ab109a8a73bd4a89a0df2c903e8e86e7.r2.dev/pentatonic-logo.svg" alt="Pentatonic" class="logo"/><div class="tagline">Rewards</div><div class="qr"><img src="${qrDataUrl}" alt="QR Code"/></div><p class="info">Scan with iPhone camera to add pass</p><a href="/pass" class="btn">Download Pass</a></div></body></html>`);
+    res.send(renderLandingPage({ qrDataUrl }));
   } catch (e) { res.status(500).send('Error'); }
 });
 
