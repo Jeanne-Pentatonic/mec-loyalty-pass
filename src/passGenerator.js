@@ -95,9 +95,9 @@ const KIOSK_CURRENCY = {
   mexicocity: 'MXN',
 };
 function currencyForKiosk(kiosk) {
-  if (!kiosk) return 'USD';
+  if (!kiosk) return null;
   const key = String(kiosk).toLowerCase().replace(/[\s_-]+/g, ''); // normalise spacing/case
-  return KIOSK_CURRENCY[key] || 'USD';
+  return KIOSK_CURRENCY[key] || null; // null = unknown, let caller fall back
 }
 
 async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
@@ -166,8 +166,13 @@ async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   // Diamond tier shows infinity symbol instead of points
   pass.headerFields[0].value = member.tier === 'DIAMOND' ? '∞' : member.points;
   pass.headerFields[0].changeMessage = member.tier === 'DIAMOND' ? 'Welcome, Diamond member!' : 'You now have %@ points!';
-  // Money reward — currency inferred from the kiosk location, amount derived from points.
-  const rewardCurrency = opts.currency || currencyForKiosk(opts.kiosk);
+  // Money reward — currency inferred from the kiosk location, persisted per member so it
+  // stays correct on later auto-updates (which carry no kiosk context).
+  const kioskCurrency = opts.currency || currencyForKiosk(opts.kiosk);
+  const rewardCurrency = kioskCurrency || member.reward_currency || 'USD';
+  if (kioskCurrency && kioskCurrency !== member.reward_currency) {
+    await db.setMemberCurrency(member.id, kioskCurrency);
+  }
   const rewardValue = Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100;
   pass.headerFields[1].value = rewardValue;
   pass.headerFields[1].currencyCode = rewardCurrency;

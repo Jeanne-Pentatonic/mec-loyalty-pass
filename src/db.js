@@ -121,6 +121,8 @@ const initSQL = `
     id TEXT PRIMARY KEY,
     auth_token TEXT NOT NULL,
     name TEXT DEFAULT NULL,
+    profile_token TEXT DEFAULT NULL,
+    reward_currency TEXT DEFAULT NULL,
     points INTEGER DEFAULT 0,
     tier TEXT DEFAULT 'GREEN',
     member_since TEXT NOT NULL,
@@ -152,6 +154,13 @@ const initSQL = `
     user_agent TEXT,
     created_at TEXT DEFAULT CURRENT_TIMESTAMP
   );
+
+  CREATE TABLE IF NOT EXISTS taps (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    member_id TEXT,
+    kiosk TEXT,
+    created_at TEXT DEFAULT CURRENT_TIMESTAMP
+  );
 `;
 
 // Initialize database
@@ -173,6 +182,12 @@ const initSQL = `
     } catch (e) {
       // Column already exists, ignore
     }
+    // Migration: add reward_currency column if it doesn't exist
+    try {
+      await db.execute('ALTER TABLE members ADD COLUMN reward_currency TEXT DEFAULT NULL');
+    } catch (e) {
+      // Column already exists, ignore
+    }
     // Backfill profile_token for existing members
     const members = await db.execute({ sql: 'SELECT id FROM members WHERE profile_token IS NULL', args: [] });
     for (const member of members.rows) {
@@ -190,6 +205,12 @@ const initSQL = `
     // Migration: add profile_token column if it doesn't exist
     try {
       db.exec('ALTER TABLE members ADD COLUMN profile_token TEXT DEFAULT NULL');
+    } catch (e) {
+      // Column already exists, ignore
+    }
+    // Migration: add reward_currency column if it doesn't exist
+    try {
+      db.exec('ALTER TABLE members ADD COLUMN reward_currency TEXT DEFAULT NULL');
     } catch (e) {
       // Column already exists, ignore
     }
@@ -276,6 +297,36 @@ async function validateProfileToken(memberId, profileToken) {
     return result.rows[0] || null;
   } else {
     return db.prepare('SELECT * FROM members WHERE id = ? AND profile_token = ?').get(memberId, profileToken);
+  }
+}
+
+// Look up a member by their profile_token (used as the browser "login ticket" cookie)
+async function getMemberByProfileToken(profileToken) {
+  if (!profileToken) return null;
+  if (isAsync) {
+    const result = await db.execute({ sql: 'SELECT * FROM members WHERE profile_token = ?', args: [profileToken] });
+    return result.rows[0] || null;
+  } else {
+    return db.prepare('SELECT * FROM members WHERE profile_token = ?').get(profileToken);
+  }
+}
+
+// Persist the member's reward currency (inferred from the kiosk they onboarded at)
+async function setMemberCurrency(id, currency) {
+  if (!currency) return;
+  if (isAsync) {
+    await db.execute({ sql: 'UPDATE members SET reward_currency = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?', args: [currency, id] });
+  } else {
+    db.prepare('UPDATE members SET reward_currency = ?, updated_at = CURRENT_TIMESTAMP WHERE id = ?').run(currency, id);
+  }
+}
+
+// Record a kiosk tap (member may be null for a brand-new visitor)
+async function logTap(memberId, kiosk) {
+  if (isAsync) {
+    await db.execute({ sql: 'INSERT INTO taps (member_id, kiosk) VALUES (?, ?)', args: [memberId || null, kiosk || null] });
+  } else {
+    db.prepare('INSERT INTO taps (member_id, kiosk) VALUES (?, ?)').run(memberId || null, kiosk || null);
   }
 }
 
@@ -446,6 +497,9 @@ module.exports = {
   getMember,
   getMemberByAuthToken,
   validateProfileToken,
+  getMemberByProfileToken,
+  setMemberCurrency,
+  logTap,
   updateMemberPoints,
   updateMemberProfile,
   registerDevice,

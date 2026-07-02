@@ -23,6 +23,13 @@ function getBaseUrl(req) {
   return `${protocol}://${host}`;
 }
 
+// Read a cookie value from the request
+function getCookie(req, name) {
+  const raw = req.headers.cookie || '';
+  const m = raw.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
+  return m ? decodeURIComponent(m[1]) : null;
+}
+
 // Auth middleware for Apple Wallet
 async function authenticatePass(req, res, next) {
   const authHeader = req.headers.authorization;
@@ -58,6 +65,9 @@ app.get('/pass', async (req, res) => {
   try {
     const baseUrl = getBaseUrl(req);
     const { buffer, memberId, member } = await generatePass(baseUrl, null, { kiosk: req.query.kiosk, currency: req.query.currency });
+    // Login "ticket": remember this member's browser so a later sticker tap recognises them
+    res.append('Set-Cookie', `mec_session=${member.profile_token}; Max-Age=31536000; Path=/; SameSite=Lax; Secure`);
+    if (req.query.kiosk) { try { await db.logTap(member.id, String(req.query.kiosk)); } catch (e) {} }
     res.set({
       'Content-Type': 'application/vnd.apple.pkpass',
       'Content-Disposition': 'attachment; filename="pentatonic-member.pkpass"',
@@ -86,6 +96,41 @@ app.get('/pass/:memberId', async (req, res) => {
   } catch (error) {
     console.error('Error:', error);
     res.status(404).json({ error: 'Member not found' });
+  }
+});
+
+// Kiosk "tap the sticker" entry point.
+// Recognises a returning phone via its login cookie; otherwise onboards a new visitor.
+// ?kiosk=<city> identifies which kiosk was tapped (drives currency + tap logging).
+app.get('/start', async (req, res) => {
+  const kiosk = req.query.kiosk ? String(req.query.kiosk) : null;
+  const baseUrl = getBaseUrl(req);
+  try {
+    const token = getCookie(req, 'mec_session');
+    const member = token ? await db.getMemberByProfileToken(token) : null;
+    if (member) {
+      // Returning visitor — log the tap and report who it is (kiosk experience reads this)
+      try { await db.logTap(member.id, kiosk); } catch (e) {}
+      console.log(`Tap: returning ${member.id.slice(0, 8)}... @ ${kiosk || 'unknown'}`);
+      return res.json({
+        status: 'returning',
+        kiosk,
+        member: {
+          id: member.id,
+          name: member.name,
+          points: member.points,
+          tier: member.tier,
+          currency: member.reward_currency || 'USD',
+        },
+      });
+    }
+    // New visitor — send them to download their pass (which sets the cookie). Preserve kiosk.
+    console.log(`Tap: new visitor @ ${kiosk || 'unknown'} -> onboarding`);
+    const q = kiosk ? `?kiosk=${encodeURIComponent(kiosk)}` : '';
+    return res.redirect(302, `${baseUrl}/pass${q}`);
+  } catch (error) {
+    console.error('start error:', error);
+    return res.status(500).json({ error: 'start failed', message: error.message });
   }
 });
 
