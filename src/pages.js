@@ -60,8 +60,11 @@ footer{margin-top:44px}
 /* co-brand lockup: symbol first, divider, partner at equal visual weight */
 .cobrand{display:flex;align-items:center;justify-content:center;gap:14px}
 .cobrand .rule{width:1px;height:26px;background:rgba(255,255,255,0.28)}
-.cobrand .partner{font-weight:500;font-size:14px;letter-spacing:0.22em;color:var(--ink)}
+.cobrand .partner{font-weight:500;font-size:14px;letter-spacing:0.22em;color:var(--ink);text-decoration:none}
+.cobrand .partner:hover{color:var(--mc-orange)}
 .fineprint{margin-top:14px;color:var(--muted);font-size:12px;font-weight:300;letter-spacing:0.02em}
+.fineprint .about{color:var(--muted);text-decoration:underline;text-underline-offset:3px;text-decoration-color:rgba(255,255,255,0.25)}
+.fineprint .about:hover{color:var(--ink)}
 @media (max-width:640px){.qr-tile,.hint,.divider{display:none}h1{font-size:24px}.sub{margin-bottom:28px}}
 </style>
 </head>
@@ -79,8 +82,8 @@ footer{margin-top:44px}
   <div class="qr-tile"><img src="${qrDataUrl}" alt="QR code — scan to get the card on your phone"></div>
   <p class="hint">Scan to get the card on your phone instead</p>
   <footer>
-    <div class="cobrand">${MC_MARK(34)}<span class="rule"></span><span class="partner">PENTATONIC</span></div>
-    <div class="fineprint">Mastercard Experience Center</div>
+    <div class="cobrand">${MC_MARK(34)}<span class="rule"></span><a class="partner" href="https://pentatonic.com" target="_blank" rel="noopener">PENTATONIC</a></div>
+    <div class="fineprint">Mastercard Experience Center · <a class="about" href="https://pentatonic.com" target="_blank" rel="noopener">About Pentatonic</a></div>
   </footer>
 </main>
 </body>
