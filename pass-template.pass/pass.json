@@ -1,0 +1,93 @@
+{
+  "formatVersion": 1,
+  "passTypeIdentifier": "pass.com.pentatonic.loyalty",
+  "teamIdentifier": "SJPM5MT6LL",
+  "organizationName": "Pentatonic",
+  "description": "Pentatonic Membership Card",
+  "serialNumber": "PLACEHOLDER_SERIAL_NUMBER",
+  "generic": {
+    "headerFields": [
+      {
+        "key": "points",
+        "label": "POINTS",
+        "value": 0,
+        "textAlignment": "PKTextAlignmentRight"
+      }
+    ],
+    "primaryFields": [
+      {
+        "key": "member",
+        "label": "MEMBER",
+        "value": "PLACEHOLDER"
+      }
+    ],
+    "auxiliaryFields": [
+      {
+        "key": "name",
+        "label": "NAME",
+        "value": ""
+      }
+    ],
+    "secondaryFields": [
+      {
+        "key": "tier",
+        "label": "TIER",
+        "value": "GREEN"
+      },
+      {
+        "key": "memberSince",
+        "label": "SINCE",
+        "value": "PLACEHOLDER"
+      }
+    ],
+    "backFields": [
+      {
+        "key": "memberId",
+        "label": "Member ID",
+        "value": "PLACEHOLDER"
+      },
+      {
+        "key": "viewProfile",
+        "label": "View Profile",
+        "value": "PLACEHOLDER",
+        "attributedValue": "<a href='PLACEHOLDER'>Update your name or view full history</a>"
+      },
+      {
+        "key": "passDetails",
+        "label": "Pass Details",
+        "value": "PLACEHOLDER",
+        "attributedValue": "<a href='PLACEHOLDER'>View profile & re-download pass</a>"
+      },
+      {
+        "key": "recentActivity",
+        "label": "Recent Activity",
+        "value": "No recent activity"
+      },
+      {
+        "key": "website",
+        "label": "Website",
+        "value": "https://pentatonic.com"
+      },
+      {
+        "key": "terms",
+        "label": "Terms & Conditions",
+        "value": "This membership card is personal and non-transferable. Points are earned through sustainable actions and purchases. For support, visit pentatonic.com/support"
+      }
+    ]
+  },
+  "barcode": {
+    "format": "PKBarcodeFormatQR",
+    "message": "PLACEHOLDER",
+    "messageEncoding": "iso-8859-1"
+  },
+  "barcodes": [
+    {
+      "format": "PKBarcodeFormatQR",
+      "message": "PLACEHOLDER",
+      "messageEncoding": "iso-8859-1"
+    }
+  ],
+  "backgroundColor": "rgb(23, 23, 23)",
+  "foregroundColor": "rgb(255, 255, 255)",
+  "labelColor": "rgb(255, 95, 0)"
+}

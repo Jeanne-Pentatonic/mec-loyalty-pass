@@ -1,0 +1,40 @@
+# Dependencies
+node_modules/
+
+# Environment files
+.env
+.env.local
+
+# Certificates (sensitive)
+certificates/*.pem
+certificates/*.p12
+certificates/ssl/
+certificates/apns/
+
+# Database
+data/
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# IDE
+.vscode/
+.idea/
+
+# Logs
+*.log
+npm-debug.log*
+
+# Build output
+dist/
+*.pkpass
+
+# Sensitive files
+*.p12
+*.cer
+vercel-env-vars.txt
+45f90c143bfc3662d5ebf58c0e35798451709881.jpg
+
+# secrets (all variants)
+vercel-env-vars*.txt

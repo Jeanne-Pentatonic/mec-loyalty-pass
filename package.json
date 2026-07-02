@@ -1,0 +1,33 @@
+{
+  "name": "pentatonic-wallet",
+  "version": "1.0.0",
+  "description": "Apple Wallet loyalty pass generator for Pentatonic",
+  "main": "src/index.js",
+  "scripts": {
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js",
+    "db": "node scripts/query-db.js",
+    "db:members": "node scripts/query-db.js members",
+    "db:refreshes": "node scripts/query-db.js refreshes",
+    "db:recent": "node scripts/query-db.js recent",
+    "db:patterns": "node scripts/query-db.js patterns"
+  },
+  "keywords": [
+    "apple-wallet",
+    "pkpass",
+    "loyalty",
+    "pentatonic"
+  ],
+  "author": "Pentatonic",
+  "license": "MIT",
+  "dependencies": {
+    "@libsql/client": "^0.17.0",
+    "apn": "^2.2.0",
+    "better-sqlite3": "^12.5.0",
+    "cors": "^2.8.5",
+    "express": "^4.18.2",
+    "passkit-generator": "^3.2.2",
+    "qrcode": "^1.5.4",
+    "uuid": "^9.0.1"
+  }
+}

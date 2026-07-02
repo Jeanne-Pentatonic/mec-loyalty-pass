@@ -1,0 +1,6 @@
+# Place your certificate files here:
+# - signerCert.pem
+# - signerKey.pem
+# - wwdr.pem
+#
+# See README.md for instructions on obtaining these certificates.
