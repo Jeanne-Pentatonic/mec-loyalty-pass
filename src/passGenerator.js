@@ -79,7 +79,20 @@ function getCertificates() {
  * @param {string} existingMemberId - Optional existing member ID to regenerate pass
  * @returns {Promise<{buffer: Buffer, memberId: string, member: object}>}
  */
-async function generatePass(baseUrl, existingMemberId = null) {
+// Money-reward config (PLACEHOLDERS — replace map + rate with the real kiosk list & reward rule)
+const REWARD_POINTS_PER_UNIT = 100; // 100 points = 1 unit of the local currency
+function currencyForKiosk(kiosk) {
+  if (!kiosk) return 'USD';
+  const k = String(kiosk).toLowerCase();
+  const map = {
+    london: 'GBP', newyork: 'USD', 'new-york': 'USD', paris: 'EUR',
+    tokyo: 'JPY', dubai: 'AED', singapore: 'SGD',
+    '1': 'USD', '2': 'GBP', '3': 'EUR', '4': 'JPY', '5': 'AED', '6': 'SGD',
+  };
+  return map[k] || 'USD';
+}
+
+async function generatePass(baseUrl, existingMemberId = null, opts = {}) {
   let member;
 
   if (existingMemberId) {
@@ -145,6 +158,12 @@ async function generatePass(baseUrl, existingMemberId = null) {
   // Diamond tier shows infinity symbol instead of points
   pass.headerFields[0].value = member.tier === 'DIAMOND' ? '∞' : member.points;
   pass.headerFields[0].changeMessage = member.tier === 'DIAMOND' ? 'Welcome, Diamond member!' : 'You now have %@ points!';
+  // Money reward — currency inferred from the kiosk location, amount derived from points.
+  const rewardCurrency = opts.currency || currencyForKiosk(opts.kiosk);
+  const rewardValue = Math.round((member.points / REWARD_POINTS_PER_UNIT) * 100) / 100;
+  pass.headerFields[1].value = rewardValue;
+  pass.headerFields[1].currencyCode = rewardCurrency;
+  pass.headerFields[1].changeMessage = 'Your reward is now %@';
   pass.primaryFields[0].value = member.id.toUpperCase().slice(0, 8);
   // Set name in auxiliaryFields (visible below primary field)
   if (member.name) {

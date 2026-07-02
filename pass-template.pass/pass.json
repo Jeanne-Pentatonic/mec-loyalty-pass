@@ -12,6 +12,13 @@
         "label": "POINTS",
         "value": 0,
         "textAlignment": "PKTextAlignmentRight"
+      },
+      {
+        "key": "reward",
+        "label": "REWARD",
+        "value": 0,
+        "currencyCode": "USD",
+        "textAlignment": "PKTextAlignmentRight"
       }
     ],
     "primaryFields": [

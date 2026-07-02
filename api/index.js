@@ -57,7 +57,7 @@ app.get('/health', (req, res) => {
 app.get('/pass', async (req, res) => {
   try {
     const baseUrl = getBaseUrl(req);
-    const { buffer, memberId, member } = await generatePass(baseUrl);
+    const { buffer, memberId, member } = await generatePass(baseUrl, null, { kiosk: req.query.kiosk, currency: req.query.currency });
     res.set({
       'Content-Type': 'application/vnd.apple.pkpass',
       'Content-Disposition': 'attachment; filename="pentatonic-member.pkpass"',
@@ -75,7 +75,7 @@ app.get('/pass', async (req, res) => {
 app.get('/pass/:memberId', async (req, res) => {
   try {
     const baseUrl = getBaseUrl(req);
-    const { buffer, member } = await generatePass(baseUrl, req.params.memberId);
+    const { buffer, member } = await generatePass(baseUrl, req.params.memberId, { kiosk: req.query.kiosk, currency: req.query.currency });
     res.set({
       'Content-Type': 'application/vnd.apple.pkpass',
       'Content-Disposition': `attachment; filename="pentatonic-${member.id.slice(0,8)}.pkpass"`,
