@@ -13,7 +13,7 @@ const crypto = require('crypto');
 const ISSUER_ID = process.env.GOOGLE_WALLET_ISSUER_ID;
 const CLASS_SUFFIX = process.env.GOOGLE_WALLET_CLASS || 'mec_loyalty_v1';
 const LOGO_URL = process.env.GOOGLE_WALLET_LOGO_URL
-  || 'https://pub-ab109a8a73bd4a89a0df2c903e8e86e7.r2.dev/pentatonic-logo.png';
+  || 'https://mec-loyalty-pass.vercel.app/logo.png';
 
 function getServiceAccount() {
   const b64 = process.env.GOOGLE_SERVICE_ACCOUNT_BASE64;

@@ -6,6 +6,15 @@ const db = require('../src/db');
 const pushService = require('../src/pushService');
 const googleWallet = require('../src/googleWallet');
 const { v4: uuidv4 } = require('uuid');
+const fs = require('fs');
+const path = require('path');
+
+// Preload the pass logo so it can be served at a public URL (Google Wallet needs a
+// reachable PNG for the loyalty class logo). Read at require-time so Vercel bundles it.
+const LOGO_BUF = (() => {
+  try { return fs.readFileSync(path.join(__dirname, '..', 'pass-template.pass', 'logo@3x.png')); }
+  catch (e) { return null; }
+})();
 
 const app = express();
 
@@ -31,6 +40,13 @@ function getCookie(req, name) {
   const m = raw.match(new RegExp('(?:^|; )' + name + '=([^;]*)'));
   return m ? decodeURIComponent(m[1]) : null;
 }
+
+// Public logo for the Google Wallet loyalty class (must be a reachable PNG/JPEG).
+app.get('/logo.png', (req, res) => {
+  if (!LOGO_BUF) return res.status(404).end();
+  res.set('Cache-Control', 'public, max-age=86400');
+  res.type('png').send(LOGO_BUF);
+});
 
 // Auth middleware for Apple Wallet
 async function authenticatePass(req, res, next) {
