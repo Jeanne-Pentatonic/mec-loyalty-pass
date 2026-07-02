@@ -238,33 +238,18 @@ async function createMember(id) {
   const profileToken = crypto.randomBytes(16).toString('hex');
   const memberSince = new Date().toISOString().split('T')[0];
 
-  // Generate random Boots UK purchase/trade-in history
-  const history = generateRandomHistory();
-  const totalPoints = history.reduce((sum, t) => sum + t.points, 0);
-  const tier = calculateTier(totalPoints);
+  // Blank account on creation: zero points, base tier, no purchase/trade-in history.
+  // (generateRandomHistory is kept above for easy re-enabling of demo seeding.)
+  const startingPoints = 0;
+  const tier = calculateTier(startingPoints);
 
   if (isAsync) {
     await db.execute({
       sql: 'INSERT INTO members (id, auth_token, profile_token, member_since, points, tier) VALUES (?, ?, ?, ?, ?, ?)',
-      args: [id, authToken, profileToken, memberSince, totalPoints, tier],
+      args: [id, authToken, profileToken, memberSince, startingPoints, tier],
     });
-
-    // Insert history records with backdated timestamps
-    for (const transaction of history) {
-      const reason = `${transaction.type}: ${transaction.product}`;
-      await db.execute({
-        sql: 'INSERT INTO points_history (member_id, points_change, reason, created_at) VALUES (?, ?, ?, ?)',
-        args: [id, transaction.points, reason, transaction.date],
-      });
-    }
   } else {
-    db.prepare('INSERT INTO members (id, auth_token, profile_token, member_since, points, tier) VALUES (?, ?, ?, ?, ?, ?)').run(id, authToken, profileToken, memberSince, totalPoints, tier);
-
-    // Insert history records with backdated timestamps
-    for (const transaction of history) {
-      const reason = `${transaction.type}: ${transaction.product}`;
-      db.prepare('INSERT INTO points_history (member_id, points_change, reason, created_at) VALUES (?, ?, ?, ?)').run(id, transaction.points, reason, transaction.date);
-    }
+    db.prepare('INSERT INTO members (id, auth_token, profile_token, member_since, points, tier) VALUES (?, ?, ?, ?, ?, ?)').run(id, authToken, profileToken, memberSince, startingPoints, tier);
   }
 
   return getMember(id);
