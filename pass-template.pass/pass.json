@@ -3,9 +3,9 @@
   "passTypeIdentifier": "pass.com.pentatonic.loyalty",
   "teamIdentifier": "SJPM5MT6LL",
   "organizationName": "Pentatonic",
-  "description": "Pentatonic Membership Card",
+  "description": "Mastercard Experience Centre Rewards",
   "serialNumber": "PLACEHOLDER_SERIAL_NUMBER",
-  "generic": {
+  "storeCard": {
     "headerFields": [
       {
         "key": "points",
